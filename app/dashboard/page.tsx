@@ -1,27 +1,79 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Sidebar from "@/components/dashboard/Sidebar";
+import DashboardHeader from "@/components/dashboard/DashboardHeader";
+import StatsGrid from "@/components/dashboard/StatsGrid";
+import ThreatFeed from "@/components/dashboard/ThreatFeed";
+import type { Competitor } from "@/app/onboarding/page";
 
-// Temporary placeholder page - Full dashboard will be committed later
-// Dashboard components are excluded from git for now
 export default function DashboardPage() {
   const router = useRouter();
+  const [selectedCompetitors, setSelectedCompetitors] = useState<Competitor[]>([]);
 
   useEffect(() => {
-    // Redirect back to onboarding for now since dashboard is not ready for commit
-    router.push("/onboarding");
-  }, [router]);
+    try {
+      const storedData = localStorage.getItem("onboarding_data");
+      if (storedData) {
+        const data = JSON.parse(storedData);
+        if (data.competitors && Array.isArray(data.competitors) && data.competitors.length > 0) {
+          const filtered = data.competitors.filter((c: Competitor) => c.selected);
+          if (filtered.length > 0) {
+            setSelectedCompetitors(filtered);
+            return;
+          }
+        }
+      }
+
+      const mockCompetitors: Competitor[] = [
+        {
+          id: "1",
+          name: "Acme Analytics",
+          domain: "acmeanalytics.io",
+          initial: "A",
+          color: "indigo",
+          matchScore: 98,
+          selected: true,
+        },
+        {
+          id: "2",
+          name: "DataFlow Inc",
+          domain: "dataflow.com",
+          initial: "D",
+          color: "orange",
+          matchScore: 94,
+          selected: true,
+        },
+        {
+          id: "3",
+          name: "MetricsHive",
+          domain: "metricshive.co",
+          initial: "M",
+          color: "green",
+          matchScore: 88,
+          selected: true,
+        },
+      ];
+      setSelectedCompetitors(mockCompetitors);
+    } catch (e) {
+      console.error("Error loading competitors:", e);
+      setSelectedCompetitors([]);
+    }
+  }, []);
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[#f8f9fa]">
-      <div className="text-center">
-        <div className="mb-4">
-          <span className="material-symbols-outlined text-6xl text-[#49879c]">dashboard</span>
+    <div className="flex h-screen overflow-hidden bg-[#f8fbfc]">
+      <Sidebar />
+      <main className="flex flex-1 flex-col overflow-hidden bg-[#f8fbfc]">
+        <DashboardHeader />
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
+          <div className="mx-auto max-w-6xl space-y-8">
+            <StatsGrid />
+            <ThreatFeed competitors={selectedCompetitors} />
+          </div>
         </div>
-        <p className="text-[#0d181c] text-xl font-bold mb-2">Dashboard Coming Soon</p>
-        <p className="text-[#49879c] text-sm">Redirecting to onboarding...</p>
-      </div>
+      </main>
     </div>
   );
 }
