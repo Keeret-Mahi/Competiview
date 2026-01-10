@@ -39,3 +39,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# dashboard components (temporarily excluded from git - add when ready)
+/components/dashboard
