@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+  <!-- Simple insights icon - lightbulb for competitive intelligence -->
+  <path d="M12 2C8.13 2 5 5.13 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26c1.81-1.27 3-3.36 3-5.74 0-3.87-3.13-7-7-7zm0 12c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z" fill="#0db9f2"/>
+  <rect x="9" y="17" width="6" height="2" rx="1" fill="#0db9f2"/>
+  <circle cx="12" cy="9" r="1" fill="#ffffff"/>
+</svg>

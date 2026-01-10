@@ -84,11 +84,11 @@ export default function CompetitorsTable({ competitors, onDelete }: CompetitorsT
   const paginatedRows = filteredRows.slice(startIndex, startIndex + itemsPerPage);
 
   const categoryColors: Record<string, string> = {
-    Fintech: "bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-300",
-    Payments: "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400",
-    Enterprise: "bg-purple-50 text-purple-600 dark:bg-purple-900/30 dark:text-purple-300",
-    POS: "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400",
-    SaaS: "bg-indigo-50 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-300",
+    Fintech: "bg-blue-200 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300",
+    Payments: "bg-slate-200 text-slate-800 dark:bg-slate-800 dark:text-slate-400",
+    Enterprise: "bg-purple-200 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300",
+    POS: "bg-slate-200 text-slate-700 dark:bg-slate-800 dark:text-slate-400",
+    SaaS: "bg-indigo-200 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300",
   };
 
   const gradientClasses: Record<string, string> = {

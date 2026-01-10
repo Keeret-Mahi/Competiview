@@ -26,7 +26,7 @@ export interface Threat {
 }
 
 // Generate mock threats based on selected competitors
-function generateMockThreats(competitors: Competitor[]): Threat[] {
+export function generateMockThreats(competitors: Competitor[]): Threat[] {
   if (competitors.length === 0) {
     return [];
   }

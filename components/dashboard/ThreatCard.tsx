@@ -23,25 +23,25 @@ const gradientClasses: Record<string, string> = {
 const severityStyles = {
   High: {
     borderColor: "border-l-danger",
-    badge: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300",
-    dot: "bg-red-500",
+    badge: "text-red-800 bg-danger/10 dark:bg-red-900/30 dark:text-red-300",
+    dot: "bg-danger",
   },
   Medium: {
     borderColor: "border-l-warning",
-    badge: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300",
-    dot: "bg-yellow-500",
+    badge: "bg-yellow-50 text-[#78350F] dark:bg-yellow-900/30 dark:text-yellow-300",
+    dot: "bg-yellow-700",
   },
   Low: {
     borderColor: "border-l-success",
-    badge: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300",
-    dot: "bg-green-500",
+    badge: "bg-green-50 text-[#14532D] dark:bg-green-900/30 dark:text-green-300",
+    dot: "bg-green-700",
   },
 };
 
 const categoryColors = {
-  Pricing: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300",
-  Product: "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300",
-  Marketing: "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300",
+  Pricing: "bg-sky-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300",
+  Product: "bg-purple-50 text-[#581C87] dark:bg-purple-900/30 dark:text-purple-300",
+  Marketing: "bg-orange-50 text-[#7C2D12] dark:bg-orange-900/30 dark:text-orange-300",
 };
 
 export default function ThreatCard({ threat }: ThreatCardProps) {

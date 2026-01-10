@@ -85,19 +85,60 @@ export default function Step2Competitors({
     domain: "",
   });
 
+  const discoverCompetitorsFromAPI = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch('/api/onboarding/discover-competitors', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          websiteUrl: formData.websiteUrl,
+          category: formData.category,
+          city: formData.city,
+          country: formData.country,
+          postalCode: formData.postalCode,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to discover competitors');
+      }
+
+      const data = await response.json();
+      
+      if (data.competitors && data.competitors.length > 0) {
+        setCompetitors(data.competitors);
+        updateFormData({ competitors: data.competitors });
+      } else {
+        // Fallback to mock data if no competitors found
+        console.warn('No competitors found via API, using fallback data');
+        const fallback = generateCompetitors(formData);
+        setCompetitors(fallback);
+        updateFormData({ competitors: fallback });
+      }
+    } catch (error: any) {
+      console.error('Error discovering competitors:', error);
+      // On error, fallback to mock data so the user can continue
+      const fallback = generateCompetitors(formData);
+      setCompetitors(fallback);
+      updateFormData({ competitors: fallback });
+      // You might want to show an error toast here
+      alert(`Competitor discovery error: ${error.message}. Using fallback data.`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (formData.competitors.length === 0) {
-      // Simulate competitor discovery based on Step 1 data
-      // TODO: Replace with actual API call when backend is ready
-      setLoading(true);
-      setTimeout(() => {
-        const discovered = generateCompetitors(formData);
-        setCompetitors(discovered);
-        updateFormData({ competitors: discovered });
-        setLoading(false);
-      }, 1000); // Simulate API delay
+      // Call the API to discover competitors when component mounts
+      discoverCompetitorsFromAPI();
     }
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Only run once on mount
 
   const handleToggleCompetitor = (id: string) => {
     const updated = competitors.map((c) =>

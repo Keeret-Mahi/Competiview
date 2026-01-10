@@ -9,14 +9,14 @@ export default function Sidebar() {
   const navItems = [
     { href: "/dashboard", icon: "dashboard", label: "Dashboard", isActive: pathname === "/dashboard" },
     { href: "/competitors", icon: "groups", label: "Competitors", isActive: pathname === "/competitors" },
-    { href: "#", icon: "notifications", label: "Alerts", isActive: pathname === "/alerts" },
+    { href: "/alerts", icon: "notifications", label: "Alerts", isActive: pathname === "/alerts" },
   ];
 
   return (
     <aside className="hidden w-64 flex-col border-r border-[#cee2e8] bg-white lg:flex shrink-0">
       <div className="flex h-16 items-center gap-3 px-6 border-b border-[#cee2e8]">
         <div className="bg-primary/20 flex h-10 w-10 items-center justify-center rounded-xl">
-          <span className="material-symbols-outlined text-primary text-2xl">visibility</span>
+          <span className="material-symbols-outlined text-primary text-2xl">insights</span>
         </div>
         <h1 className="text-lg font-bold tracking-tight text-[#0d181c]">Competiview</h1>
       </div>
