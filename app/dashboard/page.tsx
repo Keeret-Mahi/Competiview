@@ -13,6 +13,9 @@ export default function DashboardPage() {
   const [selectedCompetitors, setSelectedCompetitors] = useState<Competitor[]>([]);
 
   useEffect(() => {
+    // TODO: Replace with actual data fetching from backend/local storage
+    // For now, check if we have competitors from onboarding
+    // This is a placeholder - in production, fetch from API/local storage
     try {
       const storedData = localStorage.getItem("onboarding_data");
       if (storedData) {
@@ -26,6 +29,8 @@ export default function DashboardPage() {
         }
       }
 
+      // Fallback: Use mock competitors for demo if no data found
+      // TODO: Remove this when backend is ready
       const mockCompetitors: Competitor[] = [
         {
           id: "1",
@@ -58,6 +63,7 @@ export default function DashboardPage() {
       setSelectedCompetitors(mockCompetitors);
     } catch (e) {
       console.error("Error loading competitors:", e);
+      // Set empty array on error - user can go through onboarding
       setSelectedCompetitors([]);
     }
   }, []);
