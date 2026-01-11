@@ -8,6 +8,42 @@ export interface CompanyInfo {
   keywords: string[];
   industry?: string;
   location?: string;
+  cuisineType?: string; // For restaurants: pizza, italian, chinese, etc.
+}
+
+/**
+ * Extract main content from HTML (simplified - removes scripts, styles, nav, footer)
+ * Returns title and main text content
+ */
+export async function extractMainContent(html: string, url: string): Promise<{ title: string; text: string }> {
+  // Extract title
+  const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
+  const title = titleMatch ? titleMatch[1].trim() : '';
+
+  // Remove scripts, styles, and other non-content elements
+  let cleanedHtml = html
+    .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
+    .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
+    .replace(/<nav[^>]*>[\s\S]*?<\/nav>/gi, '')
+    .replace(/<footer[^>]*>[\s\S]*?<\/footer>/gi, '')
+    .replace(/<header[^>]*>[\s\S]*?<\/header>/gi, '');
+
+  // Extract text content from common content elements
+  const contentMatches = cleanedHtml.match(/<(main|article|section|div)[^>]*>[\s\S]*?<\/(main|article|section|div)>/gi);
+  
+  let text = '';
+  if (contentMatches) {
+    text = contentMatches
+      .join(' ')
+      .replace(/<[^>]+>/g, ' ') // Remove HTML tags
+      .replace(/\s+/g, ' ') // Normalize whitespace
+      .trim();
+  } else {
+    // Fallback: extract all text
+    text = cleanedHtml.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+  }
+
+  return { title, text };
 }
 
 /**
@@ -49,10 +85,15 @@ export async function extractCompanyInfo(websiteUrl: string): Promise<CompanyInf
       });
     }
 
+    // Extract cuisine type for restaurants
+    // Look for common cuisine keywords in title, description, and body text
+    const cuisineType = extractCuisineType(name, description, html);
+
     return {
       name,
       description,
       keywords,
+      cuisineType,
     };
   } catch (error) {
     console.error('Error extracting company info:', error);
@@ -62,6 +103,60 @@ export async function extractCompanyInfo(websiteUrl: string): Promise<CompanyInf
       name: url.hostname.replace('www.', ''),
       description: '',
       keywords: [],
+      cuisineType: undefined,
     };
   }
+}
+
+/**
+ * Extract cuisine type from website content
+ * Looks for common cuisine keywords in title, description, and body text
+ */
+function extractCuisineType(title: string, description: string, html: string): string | undefined {
+  // Common cuisine types and their keywords
+  const cuisineKeywords: Record<string, string[]> = {
+    pizza: ['pizza', 'pizzeria', 'pizza place', 'italian pizza'],
+    italian: ['italian', 'italy', 'pasta', 'risotto', 'gelato'],
+    chinese: ['chinese', 'china', 'szechuan', 'cantonese', 'dim sum', 'wonton'],
+    japanese: ['japanese', 'japan', 'sushi', 'ramen', 'tempura', 'teriyaki'],
+    mexican: ['mexican', 'mexico', 'taco', 'burrito', 'enchilada', 'quesadilla'],
+    indian: ['indian', 'india', 'curry', 'tandoori', 'naan', 'biryani'],
+    thai: ['thai', 'thailand', 'pad thai', 'tom yum', 'green curry'],
+    mediterranean: ['mediterranean', 'greek', 'gyro', 'hummus', 'falafel'],
+    american: ['american', 'burger', 'bbq', 'barbecue', 'steakhouse'],
+    french: ['french', 'france', 'bistro', 'brasserie', 'croissant'],
+    seafood: ['seafood', 'fish', 'lobster', 'crab', 'oyster'],
+    vegetarian: ['vegetarian', 'vegan', 'plant-based'],
+  };
+
+  // Combine all text to search
+  const searchText = `${title} ${description} ${html}`.toLowerCase();
+
+  // Find matching cuisine types
+  const matches: { cuisine: string; score: number }[] = [];
+
+  for (const [cuisine, keywords] of Object.entries(cuisineKeywords)) {
+    let score = 0;
+    for (const keyword of keywords) {
+      // Count occurrences of keyword
+      const regex = new RegExp(keyword, 'gi');
+      const matches = searchText.match(regex);
+      if (matches) {
+        score += matches.length;
+      }
+    }
+    if (score > 0) {
+      matches.push({ cuisine, score });
+    }
+  }
+
+  // Return the cuisine with the highest score
+  if (matches.length > 0) {
+    matches.sort((a, b) => b.score - a.score);
+    const topCuisine = matches[0].cuisine;
+    console.log(`🍽️ Detected cuisine type: ${topCuisine} (score: ${matches[0].score})`);
+    return topCuisine;
+  }
+
+  return undefined;
 }

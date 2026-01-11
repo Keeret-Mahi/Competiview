@@ -38,13 +38,13 @@ export default function OnboardingPage() {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<FormData>({
-    websiteUrl: "",
+    websiteUrl: "https://www.popularpizza.ca/",
     instagramUrl: "",
     linkedinUrl: "",
-    category: "",
-    country: "",
-    city: "",
-    postalCode: "",
+    category: "restaurant",
+    country: "Canada",
+    city: "Brampton",
+    postalCode: "L6Y 4E6",
     competitors: [],
     sources: {
       pricing: true,

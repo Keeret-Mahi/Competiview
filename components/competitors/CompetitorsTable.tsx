@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import type { Competitor } from "@/app/onboarding/page";
 
 interface CompetitorsTableProps {
@@ -226,9 +227,12 @@ export default function CompetitorsTable({ competitors, onDelete }: CompetitorsT
                             {competitor?.initial || row.name[0]}
                           </div>
                           <div className="flex flex-col">
-                            <span className="font-bold text-[#0d181c] group-hover:text-primary transition-colors cursor-pointer">
+                            <Link
+                              href={`/competitors/${row.id}`}
+                              className="font-bold text-[#0d181c] group-hover:text-primary transition-colors cursor-pointer"
+                            >
                               {row.name}
-                            </span>
+                            </Link>
                             <div className="flex items-center gap-1">
                               {row.isPaused && (
                                 <span className="text-xs text-amber-600 font-semibold">[Paused]</span>

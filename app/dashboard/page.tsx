@@ -6,11 +6,14 @@ import Sidebar from "@/components/dashboard/Sidebar";
 import DashboardHeader from "@/components/dashboard/DashboardHeader";
 import StatsGrid from "@/components/dashboard/StatsGrid";
 import ThreatFeed from "@/components/dashboard/ThreatFeed";
+import UpdatesFeed from "@/components/dashboard/UpdatesFeed";
 import type { Competitor } from "@/app/onboarding/page";
 
 export default function DashboardPage() {
   const router = useRouter();
   const [selectedCompetitors, setSelectedCompetitors] = useState<Competitor[]>([]);
+  const [checking, setChecking] = useState(false);
+  const [lastCheckedAt, setLastCheckedAt] = useState<Date | undefined>();
 
   useEffect(() => {
     // TODO: Replace with actual data fetching from backend/local storage
@@ -67,6 +70,54 @@ export default function DashboardPage() {
       setSelectedCompetitors([]);
     }
   }, []);
+
+  const handleCheckNow = async () => {
+    try {
+      setChecking(true);
+      console.log('🔄 Manual check triggered');
+      
+      // Get competitors to check (use pizza demo if none selected)
+      const baseUrl = window.location.origin;
+      const competitorsToCheck = selectedCompetitors.length > 0 
+        ? selectedCompetitors 
+        : [{
+            id: 'pizza-demo',
+            name: 'Slice & Wood Pizzeria',
+            domain: `${baseUrl}/api/demo/pizza-website`,
+            initial: 'S',
+            color: 'red',
+            matchScore: 100,
+            selected: true,
+          }];
+      
+      const response = await fetch('/api/monitoring/menu/check-now', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ competitors: competitorsToCheck }),
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Failed to check for updates');
+      }
+      
+      const result = await response.json();
+      console.log('✅ Check complete:', result);
+      
+      setLastCheckedAt(new Date());
+      
+      // Refresh the updates feed will happen automatically via useEffect
+      // But we can trigger a small delay to ensure server state is updated
+      setTimeout(() => {
+        window.location.reload(); // Simple refresh to show new updates
+      }, 500);
+    } catch (error: any) {
+      console.error('❌ Error checking for updates:', error);
+      alert(`Failed to check for updates: ${error.message}`);
+    } finally {
+      setChecking(false);
+    }
+  };
 
   return (
     <div className="flex h-screen overflow-hidden bg-[#f8fbfc]">

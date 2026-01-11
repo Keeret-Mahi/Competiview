@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Sidebar from "@/components/dashboard/Sidebar";
-import CompetitorsTable from "@/components/competitors/CompetitorsTable";
+import CompetitorsGrid from "@/components/competitors/CompetitorsGrid";
 import AddCompetitorModal from "@/components/competitors/AddCompetitorModal";
 import type { Competitor } from "@/app/onboarding/page";
 
@@ -14,21 +14,42 @@ export default function CompetitorsPage() {
     // Load competitors from localStorage (from onboarding)
     // TODO: Replace with actual API call when backend is ready
     try {
+      const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000';
+      
+      // Always include pizza demo competitor
+      const pizzaDemoCompetitor: Competitor = {
+        id: "pizza-demo",
+        name: "Slice & Wood Pizzeria",
+        domain: `${baseUrl}/api/demo/pizza-website`,
+        initial: "S",
+        color: "red",
+        matchScore: 100,
+        selected: true,
+      };
+      
       const storedData = localStorage.getItem("onboarding_data");
       if (storedData) {
         const data = JSON.parse(storedData);
         if (data.competitors && Array.isArray(data.competitors) && data.competitors.length > 0) {
           const filtered = data.competitors.filter((c: Competitor) => c.selected);
-          if (filtered.length > 0) {
+          
+          // Check if pizza demo is already in the list
+          const hasPizzaDemo = filtered.some((c: Competitor) => c.id === 'pizza-demo');
+          
+          // Always include pizza demo competitor if not already present
+          if (!hasPizzaDemo) {
+            setSelectedCompetitors([pizzaDemoCompetitor, ...filtered]);
+          } else {
             setSelectedCompetitors(filtered);
-            return;
           }
+          return;
         }
       }
 
-      // Fallback: Use mock competitors for demo if no data found
+      // Fallback: Use pizza demo competitor + mock competitors for demo if no data found
       // TODO: Remove this when backend is ready
       const mockCompetitors: Competitor[] = [
+        pizzaDemoCompetitor,
         {
           id: "1",
           name: "Acme Analytics",
@@ -60,7 +81,17 @@ export default function CompetitorsPage() {
       setSelectedCompetitors(mockCompetitors);
     } catch (e) {
       console.error("Error loading competitors:", e);
-      setSelectedCompetitors([]);
+      // Even on error, show pizza demo
+      const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000';
+      setSelectedCompetitors([{
+        id: "pizza-demo",
+        name: "Slice & Wood Pizzeria",
+        domain: `${baseUrl}/api/demo/pizza-website`,
+        initial: "S",
+        color: "red",
+        matchScore: 100,
+        selected: true,
+      }]);
     }
   };
 
@@ -146,8 +177,8 @@ export default function CompetitorsPage() {
             </button>
           </div>
 
-          {/* Filter & Search Bar */}
-          <CompetitorsTable 
+          {/* Competitors Grid */}
+          <CompetitorsGrid 
             competitors={selectedCompetitors} 
             onDelete={handleDeleteCompetitor}
           />

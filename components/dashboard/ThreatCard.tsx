@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import type { Threat } from "./ThreatFeed";
 import type { Competitor } from "@/app/onboarding/page";
 
@@ -65,7 +66,12 @@ export default function ThreatCard({ threat }: ThreatCardProps) {
             ></div>
           </div>
           <div>
-            <h3 className="text-base font-bold text-[#0d181c]">{threat.competitorName}</h3>
+            <Link
+              href={`/competitors/${threat.competitorId}`}
+              className="text-base font-bold text-[#0d181c] hover:text-primary transition-colors cursor-pointer block"
+            >
+              {threat.competitorName}
+            </Link>
             <div className="flex items-center gap-2 text-sm text-[#49879c]">
               <span>{threat.title}</span>
               <span className="text-xs">•</span>

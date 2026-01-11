@@ -1,4 +1,4 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+R# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
 # dependencies
 /node_modules
@@ -23,6 +23,8 @@
 # misc
 .DS_Store
 *.pem
+ENV_SETUP.md
+env_setup.md
 
 # debug
 npm-debug.log*
