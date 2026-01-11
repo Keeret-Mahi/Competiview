@@ -118,15 +118,9 @@ export default function UpdatesFeed({ onCheckNow, lastCheckedAt, checking }: Upd
           className="px-4 py-2 bg-primary hover:bg-[#0aa6da] text-white font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center gap-2"
         >
           {checking ? (
-            <>
-              <span className="animate-spin">⏳</span>
-              <span>Checking...</span>
-            </>
+            <span>Checking...</span>
           ) : (
-            <>
-              <span>🔄</span>
-              <span>Check Now</span>
-            </>
+            <span>Check Now</span>
           )}
         </button>
       </div>

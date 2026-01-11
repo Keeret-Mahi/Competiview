@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import ThreatCard from "./ThreatCard";
 import type { Competitor } from "@/app/onboarding/page";
 
@@ -25,81 +25,171 @@ export interface Threat {
   diffView?: string;
 }
 
-// Generate mock threats based on selected competitors
-export function generateMockThreats(competitors: Competitor[]): Threat[] {
-  if (competitors.length === 0) {
-    return [];
+// UpdateEvent from monitoring system
+interface UpdateEvent {
+  id: string;
+  competitorId: string;
+  competitorName?: string;
+  url: string;
+  type: 'PRODUCT_ADDED' | 'PRICE_CHANGED';
+  createdAt: Date | string;
+  payload: {
+    itemKey: string;
+    itemName: string;
+    oldPrice?: number;
+    newPrice?: number;
+    price?: number;
+    description?: string;
+  };
+}
+
+// Convert UpdateEvent to Threat
+function convertUpdateEventToThreat(event: UpdateEvent, competitor: Competitor | null): Threat | null {
+  if (!competitor) {
+    // Try to find competitor from competitors list or use defaults for pizza demo
+    if (event.competitorId === 'pizza-demo') {
+      competitor = {
+        id: 'pizza-demo',
+        name: 'Slice & Wood Pizzeria',
+        domain: '',
+        initial: 'S',
+        color: 'red',
+        matchScore: 100,
+        selected: true,
+      };
+    } else {
+      return null;
+    }
   }
 
-  const threats: Threat[] = [];
-  const severities: ("High" | "Medium" | "Low")[] = ["High", "Medium", "Low"];
-  const categories: ("Pricing" | "Product" | "Marketing")[] = ["Pricing", "Product", "Marketing"];
+  const eventDate = new Date(event.createdAt);
+  const now = new Date();
+  const diffMs = now.getTime() - eventDate.getTime();
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMins / 60);
+  const diffDays = Math.floor(diffHours / 24);
 
-  competitors.forEach((competitor, index) => {
-    const severity = severities[index % severities.length];
-    const category = categories[index % categories.length];
+  let timeAgo = 'Just now';
+  if (diffMins >= 1 && diffMins < 60) {
+    timeAgo = `${diffMins} minute${diffMins > 1 ? 's' : ''} ago`;
+  } else if (diffHours >= 1 && diffHours < 24) {
+    timeAgo = `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+  } else if (diffDays >= 1) {
+    timeAgo = `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+  }
 
-    // Create different threat types based on index
-    // In production, these would come from the backend API
-    if (index % 3 === 0) {
-      // High severity pricing change (first, fourth, etc.)
-      threats.push({
-        id: `threat-${competitor.id}-${index}-1`,
-        competitorId: competitor.id,
-        competitorName: competitor.name,
-        competitorInitial: competitor.initial,
-        competitorColor: competitor.color,
-        category: "Pricing",
-        severity: "High",
-        title: "Changed Pricing Page",
-        timeAgo: `${index + 1}h ago`,
-        whyItMatters: `${competitor.name} has significantly lowered their Enterprise tier pricing by approximately 15%. This move likely signals an aggressive strategy to capture market share in the mid-market segment where we currently have a stronghold.`,
-        beforeText: "Enterprise Plan: Starting at $5,000 / month",
-        afterText: "Enterprise Plan: Starting at $4,250 / month",
-      });
-    } else if (index % 3 === 1) {
-      // Medium severity product change (second, fifth, etc.)
-      threats.push({
-        id: `threat-${competitor.id}-${index}-1`,
-        competitorId: competitor.id,
-        competitorName: competitor.name,
-        competitorInitial: competitor.initial,
-        competitorColor: competitor.color,
-        category: "Product",
-        severity: "Medium",
-        title: "New Feature Detected",
-        timeAgo: `${index + 3}h ago`,
-        whyItMatters: `${competitor.name} has rolled out a new 'Auto-Sync' feature in beta. This directly competes with our core 'Instant Connect' offering. Early user reviews suggest it's faster but lacks customization.`,
-        diffView: `<div class="feature-highlight">\n  <h3>New: Auto-Sync</h3>\n  <p>Keep your data fresh with real-time bi-directional sync.</p>\n</div>`,
-      });
-    } else {
-      // Low severity marketing change (third, sixth, etc.)
-      threats.push({
-        id: `threat-${competitor.id}-${index}-1`,
-        competitorId: competitor.id,
-        competitorName: competitor.name,
-        competitorInitial: competitor.initial,
-        competitorColor: competitor.color,
-        category: "Marketing",
-        severity: "Low",
-        title: "Updated Blog",
-        timeAgo: `${index + 1}d ago`,
-        whyItMatters: `New blog post published: "5 Ways to optimize your workflow with AI". Mentions generic industry trends, low immediate impact.`,
-      });
-    }
-  });
+  if (event.type === 'PRODUCT_ADDED') {
+    return {
+      id: event.id,
+      competitorId: event.competitorId,
+      competitorName: competitor.name,
+      competitorInitial: competitor.initial,
+      competitorColor: competitor.color,
+      category: 'Product',
+      severity: 'High',
+      title: `New Menu Item Added: ${event.payload.itemName}`,
+      timeAgo,
+      whyItMatters: `${competitor.name} has added a new menu item "${event.payload.itemName}"${event.payload.price ? ` priced at $${event.payload.price.toFixed(2)}` : ''}. This could indicate they're expanding their menu offerings to attract new customers.`,
+      afterText: `${event.payload.itemName}${event.payload.price ? ` - $${event.payload.price.toFixed(2)}` : ''}${event.payload.description ? ` - ${event.payload.description}` : ''}`,
+    };
+  } else if (event.type === 'PRICE_CHANGED') {
+    const priceChange = event.payload.oldPrice && event.payload.newPrice
+      ? ((event.payload.newPrice - event.payload.oldPrice) / event.payload.oldPrice * 100)
+      : 0;
+    
+    return {
+      id: event.id,
+      competitorId: event.competitorId,
+      competitorName: competitor.name,
+      competitorInitial: competitor.initial,
+      competitorColor: competitor.color,
+      category: 'Pricing',
+      severity: Math.abs(priceChange) > 10 ? 'High' : 'Medium',
+      title: `Price Updated: ${event.payload.itemName}`,
+      timeAgo,
+      whyItMatters: `${competitor.name} has ${priceChange > 0 ? 'increased' : 'decreased'} the price of "${event.payload.itemName}" by ${Math.abs(priceChange).toFixed(1)}%${priceChange > 0 ? '. This could signal demand changes or cost adjustments.' : '. This may indicate a promotional strategy or competitive pricing adjustment.'}`,
+      beforeText: `${event.payload.itemName} - $${event.payload.oldPrice?.toFixed(2)}`,
+      afterText: `${event.payload.itemName} - $${event.payload.newPrice?.toFixed(2)}`,
+    };
+  }
 
-  return threats;
+  return null;
+}
+
+// Generate one generic mock threat
+function generateOneGenericThreat(competitors: Competitor[]): Threat | null {
+  if (competitors.length === 0) {
+    return null;
+  }
+
+  // Use the first competitor for the generic threat
+  const competitor = competitors[0];
+  
+  return {
+    id: `threat-generic-${competitor.id}`,
+    competitorId: competitor.id,
+    competitorName: competitor.name,
+    competitorInitial: competitor.initial,
+    competitorColor: competitor.color,
+    category: "Marketing",
+    severity: "Low",
+    title: "Updated Blog",
+    timeAgo: "2d ago",
+    whyItMatters: `New blog post published: "5 Ways to optimize your workflow with AI". Mentions generic industry trends, low immediate impact.`,
+  };
 }
 
 export default function ThreatFeed({ competitors }: ThreatFeedProps) {
   const [selectedFilter, setSelectedFilter] = useState<string>("All Threats");
-  const mockThreats = generateMockThreats(competitors);
+  const [realThreats, setRealThreats] = useState<Threat[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchThreats = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch('/api/monitoring/updates');
+        if (!response.ok) {
+          throw new Error('Failed to fetch updates');
+        }
+        
+        const data = await response.json();
+        const allEvents: UpdateEvent[] = data.events || [];
+        
+        // Convert events to threats
+        const threats: Threat[] = [];
+        for (const event of allEvents) {
+          const competitor = competitors.find(c => c.id === event.competitorId);
+          const threat = convertUpdateEventToThreat(event, competitor || null);
+          if (threat) {
+            threats.push(threat);
+          }
+        }
+        
+        setRealThreats(threats);
+      } catch (error) {
+        console.error('Error fetching threats:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchThreats();
+    // Refresh every 30 seconds
+    const interval = setInterval(fetchThreats, 30000);
+    return () => clearInterval(interval);
+  }, [competitors]);
+
+  // Combine real threats with one generic mock threat
+  const genericThreat = generateOneGenericThreat(competitors);
+  const allThreats = genericThreat 
+    ? [...realThreats, genericThreat] 
+    : realThreats;
 
   const filteredThreats =
     selectedFilter === "All Threats"
-      ? mockThreats
-      : mockThreats.filter((threat) => threat.category === selectedFilter);
+      ? allThreats
+      : allThreats.filter((threat) => threat.category === selectedFilter);
 
   const filters = ["All Threats", "Pricing", "Product", "Marketing"];
 
@@ -127,7 +217,14 @@ export default function ThreatFeed({ competitors }: ThreatFeedProps) {
 
       {/* Feed List */}
       <div className="flex flex-col space-y-4">
-        {filteredThreats.length === 0 ? (
+        {loading ? (
+          <div className="flex flex-col items-center justify-center py-12 rounded-xl border border-[#cee2e8] bg-white">
+            <span className="material-symbols-outlined text-6xl text-[#98aeb6] mb-4 animate-spin">
+              refresh
+            </span>
+            <p className="text-lg font-semibold text-[#0d181c] mb-2">Loading threats...</p>
+          </div>
+        ) : filteredThreats.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 rounded-xl border border-[#cee2e8] bg-white">
             <span className="material-symbols-outlined text-6xl text-[#98aeb6] mb-4">
               notifications_off

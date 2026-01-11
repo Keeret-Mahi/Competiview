@@ -16,25 +16,42 @@ export default function DashboardPage() {
   const [lastCheckedAt, setLastCheckedAt] = useState<Date | undefined>();
 
   useEffect(() => {
-    // TODO: Replace with actual data fetching from backend/local storage
-    // For now, check if we have competitors from onboarding
-    // This is a placeholder - in production, fetch from API/local storage
+    // Load competitors from localStorage, always include pizza demo
     try {
+      const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000';
+      const pizzaDemoCompetitor: Competitor = {
+        id: "pizza-demo",
+        name: "Slice & Wood Pizzeria",
+        domain: `${baseUrl}/api/demo/pizza-website`,
+        initial: "S",
+        color: "red",
+        matchScore: 100,
+        selected: true,
+      };
+
       const storedData = localStorage.getItem("onboarding_data");
+      let currentCompetitors: Competitor[] = [];
+
       if (storedData) {
         const data = JSON.parse(storedData);
         if (data.competitors && Array.isArray(data.competitors) && data.competitors.length > 0) {
-          const filtered = data.competitors.filter((c: Competitor) => c.selected);
-          if (filtered.length > 0) {
-            setSelectedCompetitors(filtered);
-            return;
-          }
+          currentCompetitors = data.competitors.filter((c: Competitor) => c.selected);
         }
       }
 
+      // Ensure pizza demo competitor is always included
+      if (!currentCompetitors.some(c => c.id === pizzaDemoCompetitor.id)) {
+        currentCompetitors.unshift(pizzaDemoCompetitor);
+      }
+
+      if (currentCompetitors.length > 0) {
+        setSelectedCompetitors(currentCompetitors);
+        return;
+      }
+
       // Fallback: Use mock competitors for demo if no data found
-      // TODO: Remove this when backend is ready
       const mockCompetitors: Competitor[] = [
+        pizzaDemoCompetitor,
         {
           id: "1",
           name: "Acme Analytics",
@@ -66,8 +83,17 @@ export default function DashboardPage() {
       setSelectedCompetitors(mockCompetitors);
     } catch (e) {
       console.error("Error loading competitors:", e);
-      // Set empty array on error - user can go through onboarding
-      setSelectedCompetitors([]);
+      // Set at least pizza demo on error
+      const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000';
+      setSelectedCompetitors([{
+        id: "pizza-demo",
+        name: "Slice & Wood Pizzeria",
+        domain: `${baseUrl}/api/demo/pizza-website`,
+        initial: "S",
+        color: "red",
+        matchScore: 100,
+        selected: true,
+      }]);
     }
   }, []);
 

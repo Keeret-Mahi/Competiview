@@ -34,7 +34,20 @@ export async function POST(request: NextRequest) {
     }
 
     // Step 2: Discover competitors using Google Places API
-    let competitors;
+    let competitors: any[] = [];
+    
+    // Always include the pizza demo competitor for demo purposes
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+    const pizzaDemoCompetitor = {
+      id: 'pizza-demo',
+      name: 'Slice & Wood Pizzeria',
+      domain: `${baseUrl}/api/demo/pizza-website`,
+      initial: 'S',
+      color: 'red',
+      matchScore: 100,
+      selected: true,
+    };
+    
     try {
       console.log('🚀 Starting competitor discovery...');
       console.log('📋 Request data:', { 
@@ -46,7 +59,7 @@ export async function POST(request: NextRequest) {
         cuisineType: companyInfo.cuisineType 
       });
       
-      competitors = await discoverCompetitors(
+      const discoveredCompetitors = await discoverCompetitors(
         category,
         city,
         country,
@@ -55,41 +68,38 @@ export async function POST(request: NextRequest) {
         companyInfo.cuisineType // Pass cuisine type to find competitors with same cuisine
       );
       
+      competitors = discoveredCompetitors || [];
+      
       console.log(`✅ Competitor discovery completed. Found ${competitors.length} competitors.`);
+      
+      // Check if pizza demo is already in the list (avoid duplicates)
+      const hasPizzaDemo = competitors.some((c: any) => c.id === 'pizza-demo');
+      if (!hasPizzaDemo) {
+        competitors.unshift(pizzaDemoCompetitor); // Add to the beginning
+        console.log('✅ Added Slice & Wood Pizzeria to competitor list');
+      }
       
       if (competitors.length === 0) {
         console.warn('⚠️ No competitors found. This might be because:');
         console.warn('   - The business category doesn\'t match local businesses');
         console.warn('   - The location search returned no results');
         console.warn('   - All results were filtered out (no websites, or matched user company)');
+        // Even if no competitors found, include the pizza demo
+        competitors = [pizzaDemoCompetitor];
       }
     } catch (error: any) {
       console.error('❌ Error discovering competitors:', error);
       console.error('Stack trace:', error.stack);
       
-      // If Google Places API fails, return a helpful error
+      // Even on error, include the pizza demo competitor
+      competitors = [pizzaDemoCompetitor];
+      console.log('✅ Added Slice & Wood Pizzeria as fallback competitor');
+      
+      // If Google Places API fails, still return competitors (with pizza demo) but log the error
       if (error.message.includes('API key') || error.message.includes('not configured')) {
-        return NextResponse.json(
-          { 
-            error: 'Google Places API key is not configured. Please add GOOGLE_PLACES_API_KEY to your .env.local file and RESTART your dev server.',
-            details: error.message,
-            debug: process.env.NODE_ENV === 'development' ? {
-              envVarExists: !!process.env.GOOGLE_PLACES_API_KEY,
-              envVarLength: process.env.GOOGLE_PLACES_API_KEY?.length || 0,
-            } : undefined
-          },
-          { status: 500 }
-        );
+        // Don't return error - just log it and return pizza demo
+        console.warn('⚠️ Google Places API key not configured, using demo competitor only');
       }
-
-      return NextResponse.json(
-        { 
-          error: 'Failed to discover competitors',
-          details: error.message,
-          competitors: [] // Return empty array on error so frontend can handle gracefully
-        },
-        { status: 500 }
-      );
     }
 
     return NextResponse.json({
