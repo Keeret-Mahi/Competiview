@@ -240,7 +240,6 @@ export default function Step2Competitors({
             <div className="bg-[#f8fbfc] px-4 py-3 border-b border-[#e7f0f4] flex text-xs font-bold text-[#49879c] uppercase tracking-wider">
               <div className="w-10 text-center">Select</div>
               <div className="flex-1">Competitor</div>
-              <div className="w-32 text-right">Match Score</div>
             </div>
 
             <div className="overflow-y-auto custom-scrollbar bg-white">
@@ -272,23 +271,6 @@ export default function Step2Competitors({
                         {competitor.name}
                       </p>
                       <p className="text-xs text-[#49879c]">{competitor.domain}</p>
-                    </div>
-                  </div>
-                  <div className="w-32 flex flex-col items-end justify-center gap-1">
-                    <span
-                      className={`text-sm font-bold ${
-                        competitor.matchScore >= 90 ? "text-primary" : "text-[#49879c]"
-                      }`}
-                    >
-                      {competitor.matchScore}%
-                    </span>
-                    <div className="w-24 h-1.5 bg-[#cee2e8] rounded-full overflow-hidden">
-                      <div
-                        className={`h-full ${
-                          competitor.matchScore >= 90 ? "bg-primary" : "bg-[#49879c]"
-                        } rounded-full`}
-                        style={{ width: `${competitor.matchScore}%` }}
-                      ></div>
                     </div>
                   </div>
                 </label>

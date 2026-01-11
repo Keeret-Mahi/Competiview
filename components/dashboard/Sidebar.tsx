@@ -47,8 +47,7 @@ export default function Sidebar() {
         <div className="flex items-center gap-3">
           <div className="h-10 w-10 overflow-hidden rounded-full bg-gray-200 bg-cover bg-center"></div>
           <div className="flex flex-col">
-            <span className="text-sm font-medium text-[#0d181c]">Jane Doe</span>
-            <span className="text-xs text-[#49879c]">Pro Plan</span>
+            <span className="text-sm font-medium text-[#0d181c]">Keeret Mahi</span>
           </div>
         </div>
       </div>

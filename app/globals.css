@@ -76,3 +76,21 @@ body {
 body {
   font-family: var(--font-manrope), sans-serif;
 }
+
+/* Hide Next.js logo and branding */
+a[href*="vercel.com"],
+a[href*="nextjs.org"],
+img[src*="next.svg"],
+img[src*="vercel.svg"],
+[class*="nextjs"],
+[class*="vercel"] {
+  display: none !important;
+}
+
+/* Hide any footer with Next.js branding */
+footer a[href*="nextjs"],
+footer a[href*="vercel"],
+footer img[src*="next"],
+footer img[src*="vercel"] {
+  display: none !important;
+}
