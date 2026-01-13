@@ -36,13 +36,13 @@ export default function DashboardPage() {
         const data = JSON.parse(storedData);
         if (data.competitors && Array.isArray(data.competitors) && data.competitors.length > 0) {
           currentCompetitors = data.competitors.filter((c: Competitor) => c.selected);
+          // Remove old pizza-demo if it exists (we'll add the updated one)
+          currentCompetitors = currentCompetitors.filter((c: Competitor) => c.id !== 'pizza-demo');
         }
       }
 
-      // Ensure pizza demo competitor is always included
-      if (!currentCompetitors.some(c => c.id === pizzaDemoCompetitor.id)) {
-        currentCompetitors.unshift(pizzaDemoCompetitor);
-      }
+      // Always add pizza demo competitor with current origin (ensures correct URL in deployment)
+      currentCompetitors.unshift(pizzaDemoCompetitor);
 
       if (currentCompetitors.length > 0) {
         setSelectedCompetitors(currentCompetitors);

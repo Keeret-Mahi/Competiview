@@ -51,8 +51,8 @@ export default function CompetitorDetailPage() {
           competitor = data.competitors?.find((c: Competitor) => c.id === competitorId);
         }
         
-        // If not found and it's the pizza demo ID, create it
-        if (!competitor && competitorId === 'pizza-demo') {
+        // If it's the pizza demo ID, always create it with current origin (ensures correct URL in deployment)
+        if (competitorId === 'pizza-demo') {
           const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000';
           competitor = {
             id: 'pizza-demo',

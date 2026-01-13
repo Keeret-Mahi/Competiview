@@ -33,15 +33,11 @@ export default function CompetitorsPage() {
         if (data.competitors && Array.isArray(data.competitors) && data.competitors.length > 0) {
           const filtered = data.competitors.filter((c: Competitor) => c.selected);
           
-          // Check if pizza demo is already in the list
-          const hasPizzaDemo = filtered.some((c: Competitor) => c.id === 'pizza-demo');
+          // Remove old pizza-demo if it exists (we'll add the updated one with current origin)
+          const filteredWithoutPizza = filtered.filter((c: Competitor) => c.id !== 'pizza-demo');
           
-          // Always include pizza demo competitor if not already present
-          if (!hasPizzaDemo) {
-            setSelectedCompetitors([pizzaDemoCompetitor, ...filtered]);
-          } else {
-            setSelectedCompetitors(filtered);
-          }
+          // Always include pizza demo competitor with current origin (ensures correct URL in deployment)
+          setSelectedCompetitors([pizzaDemoCompetitor, ...filteredWithoutPizza]);
           return;
         }
       }
