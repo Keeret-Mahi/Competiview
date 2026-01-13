@@ -37,10 +37,7 @@ export async function POST(request: NextRequest) {
     let competitors: any[] = [];
     
     // Always include the pizza demo competitor for demo purposes
-    // Get base URL from request headers (works in deployment)
-    const protocol = request.headers.get('x-forwarded-proto') || request.headers.get('x-forwarded-protocol') || 'https';
-    const host = request.headers.get('host') || request.headers.get('x-forwarded-host') || 'localhost:3000';
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || `${protocol}://${host}`;
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
     const pizzaDemoCompetitor = {
       id: 'pizza-demo',
       name: 'Slice & Wood Pizzeria',

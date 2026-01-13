@@ -19,36 +19,6 @@ export default function DashboardPage() {
     // Load competitors from localStorage, always include pizza demo
     try {
       const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000';
-      
-      // Migration: Fix any localhost URLs in localStorage
-      const storedData = localStorage.getItem("onboarding_data");
-      if (storedData) {
-        try {
-          const data = JSON.parse(storedData);
-          if (data.competitors && Array.isArray(data.competitors)) {
-            let updated = false;
-            data.competitors = data.competitors.map((c: Competitor) => {
-              // Fix any localhost URLs to use current origin
-              if (c.domain && (c.domain.includes('localhost') || c.domain.includes('127.0.0.1'))) {
-                if (c.id === 'pizza-demo') {
-                  c.domain = `${baseUrl}/api/demo/pizza-website`;
-                  updated = true;
-                } else if (c.domain.startsWith('http://localhost') || c.domain.startsWith('https://localhost')) {
-                  c.domain = c.domain.replace(/https?:\/\/localhost(:\d+)?/, baseUrl);
-                  updated = true;
-                }
-              }
-              return c;
-            });
-            if (updated) {
-              localStorage.setItem("onboarding_data", JSON.stringify(data));
-            }
-          }
-        } catch (e) {
-          console.error('Error migrating localStorage:', e);
-        }
-      }
-      
       const pizzaDemoCompetitor: Competitor = {
         id: "pizza-demo",
         name: "Slice & Wood Pizzeria",
@@ -59,37 +29,19 @@ export default function DashboardPage() {
         selected: true,
       };
 
-      const updatedStoredData = localStorage.getItem("onboarding_data");
+      const storedData = localStorage.getItem("onboarding_data");
       let currentCompetitors: Competitor[] = [];
 
-      if (updatedStoredData) {
-        const data = JSON.parse(updatedStoredData);
+      if (storedData) {
+        const data = JSON.parse(storedData);
         if (data.competitors && Array.isArray(data.competitors) && data.competitors.length > 0) {
           currentCompetitors = data.competitors.filter((c: Competitor) => c.selected);
-          // Remove old pizza-demo if it exists (we'll add the updated one)
-          currentCompetitors = currentCompetitors.filter((c: Competitor) => c.id !== 'pizza-demo');
         }
       }
 
-      // Always add pizza demo competitor with current origin (ensures correct URL in deployment)
-      currentCompetitors.unshift(pizzaDemoCompetitor);
-      
-      // Update localStorage with the correct pizza-demo URL
-      if (storedData) {
-        try {
-          const data = JSON.parse(storedData);
-          if (data.competitors && Array.isArray(data.competitors)) {
-            const index = data.competitors.findIndex((c: Competitor) => c.id === 'pizza-demo');
-            if (index >= 0) {
-              data.competitors[index] = pizzaDemoCompetitor;
-            } else {
-              data.competitors.push(pizzaDemoCompetitor);
-            }
-            localStorage.setItem("onboarding_data", JSON.stringify(data));
-          }
-        } catch (e) {
-          console.error('Error updating localStorage:', e);
-        }
+      // Ensure pizza demo competitor is always included
+      if (!currentCompetitors.some(c => c.id === pizzaDemoCompetitor.id)) {
+        currentCompetitors.unshift(pizzaDemoCompetitor);
       }
 
       if (currentCompetitors.length > 0) {

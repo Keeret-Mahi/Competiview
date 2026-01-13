@@ -24,10 +24,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get base URL from request headers (works in deployment)
-    const protocol = request.headers.get('x-forwarded-proto') || request.headers.get('x-forwarded-protocol') || 'https';
-    const host = request.headers.get('host') || request.headers.get('x-forwarded-host') || 'localhost:3000';
-    const baseUrl = `${process.env.NEXT_PUBLIC_BASE_URL || `${protocol}://${host}`}/api/demo/test-website`;
+    const baseUrl = `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/demo/test-website`;
 
     console.log(`🎭 Triggering change detection for competitor ${competitorId}`);
 

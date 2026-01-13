@@ -31,10 +31,7 @@ export async function POST(request: NextRequest) {
       competitors = body.competitors;
     } else {
       // Default: use pizza website competitor
-      // Get base URL from request headers (works in deployment)
-      const protocol = request.headers.get('x-forwarded-proto') || request.headers.get('x-forwarded-protocol') || 'https';
-      const host = request.headers.get('host') || request.headers.get('x-forwarded-host') || 'localhost:3000';
-      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || `${protocol}://${host}`;
+      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
       competitors = [{
         id: 'pizza-demo',
         name: 'Slice & Wood Pizzeria',

@@ -42,78 +42,27 @@ export default function CompetitorDetailPage() {
       try {
         setLoading(true);
         
-        // Migration: Fix any localhost URLs in localStorage
-        const currentOrigin = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000';
-        const storedData = localStorage.getItem("onboarding_data");
-        if (storedData) {
-          try {
-            const data = JSON.parse(storedData);
-            if (data.competitors && Array.isArray(data.competitors)) {
-              let updated = false;
-              data.competitors = data.competitors.map((c: Competitor) => {
-                // Fix any localhost URLs to use current origin
-                if (c.domain && (c.domain.includes('localhost') || c.domain.includes('127.0.0.1'))) {
-                  if (c.id === 'pizza-demo') {
-                    c.domain = `${currentOrigin}/api/demo/pizza-website`;
-                    updated = true;
-                  } else if (c.domain.startsWith('http://localhost') || c.domain.startsWith('https://localhost')) {
-                    // Replace localhost with current origin for other competitors too
-                    c.domain = c.domain.replace(/https?:\/\/localhost(:\d+)?/, currentOrigin);
-                    updated = true;
-                  }
-                }
-                return c;
-              });
-              if (updated) {
-                localStorage.setItem("onboarding_data", JSON.stringify(data));
-              }
-            }
-          } catch (e) {
-            console.error('Error migrating localStorage:', e);
-          }
-        }
-        
         // Get competitor from localStorage (client-side) or use default pizza demo
         let competitor: Competitor | undefined;
-        const updatedStoredData = localStorage.getItem("onboarding_data");
+        const storedData = localStorage.getItem("onboarding_data");
         
-        if (updatedStoredData) {
-          const data = JSON.parse(updatedStoredData);
+        if (storedData) {
+          const data = JSON.parse(storedData);
           competitor = data.competitors?.find((c: Competitor) => c.id === competitorId);
         }
         
-        // If it's the pizza demo ID, always create it with current origin (ensures correct URL in deployment)
-        if (competitorId === 'pizza-demo') {
-          const correctDomain = `${currentOrigin}/api/demo/pizza-website`;
-          
-          // Always use current origin, even if competitor exists in localStorage
+        // If not found and it's the pizza demo ID, create it
+        if (!competitor && competitorId === 'pizza-demo') {
+          const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000';
           competitor = {
             id: 'pizza-demo',
             name: 'Slice & Wood Pizzeria',
-            domain: correctDomain,
+            domain: `${baseUrl}/api/demo/pizza-website`,
             initial: 'S',
             color: 'red',
             matchScore: 100,
             selected: true,
           };
-          
-          // Update localStorage with the correct URL
-          if (updatedStoredData) {
-            try {
-              const data = JSON.parse(updatedStoredData);
-              if (data.competitors && Array.isArray(data.competitors)) {
-                const index = data.competitors.findIndex((c: Competitor) => c.id === 'pizza-demo');
-                if (index >= 0) {
-                  data.competitors[index] = competitor;
-                } else {
-                  data.competitors.push(competitor);
-                }
-                localStorage.setItem("onboarding_data", JSON.stringify(data));
-              }
-            } catch (e) {
-              console.error('Error updating localStorage:', e);
-            }
-          }
         }
         
         if (!competitor) {
