@@ -43,6 +43,24 @@ export default function DashboardPage() {
 
       // Always add pizza demo competitor with current origin (ensures correct URL in deployment)
       currentCompetitors.unshift(pizzaDemoCompetitor);
+      
+      // Update localStorage with the correct pizza-demo URL
+      if (storedData) {
+        try {
+          const data = JSON.parse(storedData);
+          if (data.competitors && Array.isArray(data.competitors)) {
+            const index = data.competitors.findIndex((c: Competitor) => c.id === 'pizza-demo');
+            if (index >= 0) {
+              data.competitors[index] = pizzaDemoCompetitor;
+            } else {
+              data.competitors.push(pizzaDemoCompetitor);
+            }
+            localStorage.setItem("onboarding_data", JSON.stringify(data));
+          }
+        } catch (e) {
+          console.error('Error updating localStorage:', e);
+        }
+      }
 
       if (currentCompetitors.length > 0) {
         setSelectedCompetitors(currentCompetitors);

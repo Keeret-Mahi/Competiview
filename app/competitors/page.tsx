@@ -38,6 +38,22 @@ export default function CompetitorsPage() {
           
           // Always include pizza demo competitor with current origin (ensures correct URL in deployment)
           setSelectedCompetitors([pizzaDemoCompetitor, ...filteredWithoutPizza]);
+          
+          // Update localStorage with the correct pizza-demo URL
+          try {
+            const data = JSON.parse(storedData);
+            if (data.competitors && Array.isArray(data.competitors)) {
+              const index = data.competitors.findIndex((c: Competitor) => c.id === 'pizza-demo');
+              if (index >= 0) {
+                data.competitors[index] = pizzaDemoCompetitor;
+              } else {
+                data.competitors.push(pizzaDemoCompetitor);
+              }
+              localStorage.setItem("onboarding_data", JSON.stringify(data));
+            }
+          } catch (e) {
+            console.error('Error updating localStorage:', e);
+          }
           return;
         }
       }

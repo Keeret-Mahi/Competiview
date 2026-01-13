@@ -54,22 +54,43 @@ export default function CompetitorDetailPage() {
         // If it's the pizza demo ID, always create it with current origin (ensures correct URL in deployment)
         if (competitorId === 'pizza-demo') {
           const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000';
+          const correctDomain = `${baseUrl}/api/demo/pizza-website`;
+          
+          // Always use current origin, even if competitor exists in localStorage
           competitor = {
             id: 'pizza-demo',
             name: 'Slice & Wood Pizzeria',
-            domain: `${baseUrl}/api/demo/pizza-website`,
+            domain: correctDomain,
             initial: 'S',
             color: 'red',
             matchScore: 100,
             selected: true,
           };
+          
+          // Update localStorage with the correct URL
+          if (storedData) {
+            try {
+              const data = JSON.parse(storedData);
+              if (data.competitors && Array.isArray(data.competitors)) {
+                const index = data.competitors.findIndex((c: Competitor) => c.id === 'pizza-demo');
+                if (index >= 0) {
+                  data.competitors[index] = competitor;
+                } else {
+                  data.competitors.push(competitor);
+                }
+                localStorage.setItem("onboarding_data", JSON.stringify(data));
+              }
+            } catch (e) {
+              console.error('Error updating localStorage:', e);
+            }
+          }
         }
         
         if (!competitor) {
           throw new Error('Competitor not found');
         }
 
-        // Get website URL
+        // Get website URL - always use competitor.domain (which is now guaranteed to be correct for pizza-demo)
         const domain = competitor.domain;
         const url = domain.startsWith('http://') || domain.startsWith('https://')
           ? domain
