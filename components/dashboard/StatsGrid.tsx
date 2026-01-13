@@ -43,12 +43,25 @@ function StatCard({ label, value, trend, icon, iconColor, iconBg }: StatCardProp
   );
 }
 
+type StatItem = {
+  label: string;
+  value: number;
+  trend: {
+    value: string;
+    isPositive: boolean;
+    type: "success" | "danger" | "neutral";
+  };
+  icon: string;
+  iconColor: string;
+  iconBg: string;
+};
+
 export default function StatsGrid() {
-  const [stats, setStats] = useState([
+  const [stats, setStats] = useState<StatItem[]>([
     {
       label: "Total Threats",
       value: 0,
-      trend: { value: "0%", isPositive: true, type: "success" as const },
+      trend: { value: "0%", isPositive: true, type: "success" },
       icon: "security",
       iconColor: "text-primary",
       iconBg: "bg-primary/10",
@@ -56,7 +69,7 @@ export default function StatsGrid() {
     {
       label: "High Severity",
       value: 0,
-      trend: { value: "0%", isPositive: false, type: "danger" as const },
+      trend: { value: "0%", isPositive: false, type: "danger" },
       icon: "warning",
       iconColor: "text-danger",
       iconBg: "bg-danger/10",
@@ -64,7 +77,7 @@ export default function StatsGrid() {
     {
       label: "Monitored Orgs",
       value: 1,
-      trend: { value: "0%", isPositive: true, type: "neutral" as const },
+      trend: { value: "0%", isPositive: true, type: "neutral" },
       icon: "domain",
       iconColor: "text-warning",
       iconBg: "bg-warning/10",
@@ -72,7 +85,7 @@ export default function StatsGrid() {
     {
       label: "Recent Changes",
       value: 0,
-      trend: { value: "0%", isPositive: true, type: "success" as const },
+      trend: { value: "0%", isPositive: true, type: "success" },
       icon: "history",
       iconColor: "text-purple-500",
       iconBg: "bg-purple-500/10",
@@ -91,6 +104,12 @@ export default function StatsGrid() {
         const totalThreatsTrend = parseFloat(data.trends.totalThreats.replace('%', ''));
         const recentChangesTrend = parseFloat(data.trends.recentChanges.replace('%', ''));
         
+        const getTrendType = (trend: number): "success" | "danger" | "neutral" => {
+          if (trend > 0) return "success";
+          if (trend < 0) return "danger";
+          return "neutral";
+        };
+
         setStats([
           {
             label: "Total Threats",
@@ -98,7 +117,7 @@ export default function StatsGrid() {
             trend: { 
               value: `${totalThreatsTrend >= 0 ? '+' : ''}${data.trends.totalThreats}`, 
               isPositive: totalThreatsTrend >= 0, 
-              type: totalThreatsTrend > 0 ? "success" as const : totalThreatsTrend < 0 ? "danger" as const : "neutral" as const 
+              type: getTrendType(totalThreatsTrend)
             },
             icon: "security",
             iconColor: "text-primary",
@@ -107,7 +126,7 @@ export default function StatsGrid() {
           {
             label: "High Severity",
             value: data.highSeverity,
-            trend: { value: data.trends.highSeverity, isPositive: false, type: "danger" as const },
+            trend: { value: data.trends.highSeverity, isPositive: false, type: "danger" },
             icon: "warning",
             iconColor: "text-danger",
             iconBg: "bg-danger/10",
@@ -115,7 +134,7 @@ export default function StatsGrid() {
           {
             label: "Monitored Orgs",
             value: data.monitoredOrgs,
-            trend: { value: data.trends.monitoredOrgs, isPositive: true, type: "neutral" as const },
+            trend: { value: data.trends.monitoredOrgs, isPositive: true, type: "neutral" },
             icon: "domain",
             iconColor: "text-warning",
             iconBg: "bg-warning/10",
@@ -126,7 +145,7 @@ export default function StatsGrid() {
             trend: { 
               value: `${recentChangesTrend >= 0 ? '+' : ''}${data.trends.recentChanges}`, 
               isPositive: recentChangesTrend >= 0, 
-              type: recentChangesTrend > 0 ? "success" as const : recentChangesTrend < 0 ? "danger" as const : "neutral" as const 
+              type: getTrendType(recentChangesTrend)
             },
             icon: "history",
             iconColor: "text-purple-500",
